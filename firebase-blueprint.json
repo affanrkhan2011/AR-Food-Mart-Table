@@ -1,0 +1,68 @@
+{
+  "entities": {
+    "OrderItem": {
+      "title": "Order Item",
+      "description": "An individual item within an order.",
+      "type": "object",
+      "properties": {
+        "orderItemId": { "type": "string", "description": "Unique ID for this item in the order" },
+        "id": { "type": "string", "description": "Menu item ID" },
+        "name": { "type": "string", "description": "Name of the item" },
+        "quantity": { "type": "number", "description": "Quantity ordered" },
+        "notes": { "type": "string", "description": "Customer notes" },
+        "price": { "type": "number", "description": "Unit price" },
+        "category": { "type": "string", "description": "Item category" },
+        "served": { "type": "boolean", "description": "Whether the item has been served" }
+      },
+      "required": ["orderItemId", "name", "quantity", "price", "served"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "A food order placed by a customer at a table.",
+      "type": "object",
+      "properties": {
+        "table": { "type": "string", "description": "Table number" },
+        "items": { "type": "array", "description": "List of OrderItems" },
+        "subtotal": { "type": "number", "description": "Pre-tax total of the order" },
+        "status": { "type": "string", "enum": ["NEW", "SEEN", "DONE", "ARCHIVED"], "description": "Current processing status" },
+        "timestamp": { "type": "string", "format": "date-time", "description": "ISO timestamp of order placement" }
+      },
+      "required": ["table", "items", "subtotal", "status", "timestamp"]
+    },
+    "BillRequest": {
+      "title": "Bill Request",
+      "description": "A request for a bill from a specific table.",
+      "type": "object",
+      "properties": {
+        "table": { "type": "string", "description": "Table number" },
+        "orders": { "type": "array", "description": "All orders associated with this bill" },
+        "total": { "type": "number", "description": "Final total amount" },
+        "status": { "type": "string", "enum": ["PENDING", "COMPLETED"], "description": "Status of the bill request" },
+        "timestamp": { "type": "string", "format": "date-time", "description": "ISO timestamp of the request" }
+      },
+      "required": ["table", "orders", "total", "status", "timestamp"]
+    },
+    "MenuAvailability": {
+      "title": "Menu Availability",
+      "description": "Map of menu item IDs to their availability status.",
+      "type": "object",
+      "properties": {
+        "availability": { "type": "object", "description": "Key-value pairs of itemId: boolean" }
+      }
+    }
+  },
+  "firestore": {
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Collection of all customer orders."
+    },
+    "/billRequests/{requestId}": {
+      "schema": "BillRequest",
+      "description": "Collection of bill payment requests."
+    },
+    "/menuState/availability": {
+      "schema": "MenuAvailability",
+      "description": "Singleton document for menu item availability."
+    }
+  }
+}
