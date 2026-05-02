@@ -188,9 +188,9 @@ export default function CustomerApp() {
   if (!isTableConfirmed) {
     return (
       <div className="min-h-screen bg-paper flex flex-col items-center justify-center p-6 font-sans text-ink">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center border-t-4 border-brown-dark">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center border-t-4 border-blue-dark">
           <div className="mb-8 flex items-center justify-center">
-            <h1 className="text-5xl font-serif font-bold text-brown-dark tracking-tighter">AR Food Mart</h1>
+            <h1 className="text-5xl font-serif font-bold text-blue-dark tracking-tighter">AR Food Mart</h1>
           </div>
           
           <form onSubmit={handleTableSubmit} className="space-y-4">
@@ -201,12 +201,12 @@ export default function CustomerApp() {
               required
               value={tableNumber}
               onChange={(e) => setTableNumber(e.target.value)}
-              className="w-full text-center font-serif text-4xl py-4 rounded-xl border border-line focus:border-brown-dark focus:ring-1 focus:ring-brown-dark outline-none"
+              className="w-full text-center font-serif text-4xl py-4 rounded-xl border border-line focus:border-blue-dark focus:ring-1 focus:ring-blue-dark outline-none"
               placeholder="Table #"
             />
             <button
               type="submit"
-              className="w-full bg-brown-light hover:bg-brown-dark text-white font-bold uppercase text-xs tracking-[1px] py-4 rounded-md transition-colors"
+              className="w-full bg-blue-light hover:bg-blue-dark text-white font-bold uppercase text-xs tracking-[1px] py-4 rounded-md transition-colors"
             >
               View Menu
             </button>
@@ -219,7 +219,7 @@ export default function CustomerApp() {
   return (
     <div className="min-h-screen bg-paper text-ink font-sans flex flex-col md:grid md:grid-cols-[240px_1fr] overflow-hidden">
       {/* Sidebar Navigation */}
-      <aside className="bg-brown-dark text-white py-10 flex flex-col md:h-screen md:overflow-y-auto">
+      <aside className="bg-blue-dark text-white py-10 flex flex-col md:h-screen md:overflow-y-auto">
         <div className="px-4 pb-10 border-b border-white/10 hidden md:flex flex-col items-center">
           <div className="text-3xl font-serif font-bold text-white tracking-tighter">
             AR Food Mart
@@ -260,7 +260,7 @@ export default function CustomerApp() {
               onClick={() => setActiveCategory(category)}
               className={`whitespace-nowrap px-6 md:px-8 py-4 text-sm font-medium cursor-pointer border-b-4 md:border-b-0 md:border-l-4 transition-all duration-200 ${
                 activeCategory === category
-                  ? 'bg-white/5 border-brown-light opacity-100'
+                  ? 'bg-white/5 border-blue-light opacity-100'
                   : 'border-transparent opacity-70 hover:opacity-100'
               }`}
             >
@@ -275,11 +275,11 @@ export default function CustomerApp() {
       <main className="p-6 md:p-10 lg:px-16 lg:py-10 flex flex-col relative h-[calc(100vh-130px)] md:h-screen overflow-y-auto">
         <header className="hidden md:flex justify-between items-end mb-12">
           <div>
-            <h2 className="font-serif text-5xl italic border-b-2 border-brown-dark pb-2 leading-none">{activeCategory}</h2>
+            <h2 className="font-serif text-5xl italic border-b-2 border-blue-dark pb-2 leading-none">{activeCategory}</h2>
           </div>
           <div className="text-right">
-            <div className="text-[11px] uppercase tracking-[2px] text-brown-dark font-bold">Table</div>
-            <div className="font-serif text-6xl leading-[0.8] text-brown-light">{tableNumber}</div>
+            <div className="text-[11px] uppercase tracking-[2px] text-blue-dark font-bold">Table</div>
+            <div className="font-serif text-6xl leading-[0.8] text-blue-light">{tableNumber}</div>
           </div>
         </header>
 
@@ -294,7 +294,7 @@ export default function CustomerApp() {
             <div className="col-span-1 lg:col-span-2 space-y-8">
               {/* Preparing / Coming */}
               <div>
-                <h3 className="font-serif text-2xl mb-4 text-brown-dark border-b border-line pb-2">Preparing</h3>
+                <h3 className="font-serif text-2xl mb-4 text-blue-dark border-b border-line pb-2">Preparing</h3>
                 <div className="space-y-3">
                   {tableOrders.flatMap(order => order.items).filter(item => !item.served).length === 0 ? (
                     <p className="text-ink/60 text-sm italic">No items currently preparing.</p>
@@ -302,7 +302,7 @@ export default function CustomerApp() {
                     tableOrders.flatMap(order => order.items).filter(item => !item.served).map((item, idx) => (
                       <div key={idx} className="flex justify-between items-center bg-white p-4 rounded-xl border border-line shadow-sm">
                         <div className="flex items-center gap-3">
-                          <span className="font-bold text-brown-light bg-brown-light/10 px-2 py-1 rounded">{item.quantity}x</span>
+                          <span className="font-bold text-blue-light bg-blue-light/10 px-2 py-1 rounded">{item.quantity}x</span>
                           <span className="font-medium text-ink">{item.name}</span>
                         </div>
                         <span className="text-xs uppercase tracking-wider text-saffron font-bold animate-pulse">Cooking...</span>
@@ -314,7 +314,7 @@ export default function CustomerApp() {
 
               {/* Delivered / Served */}
               <div>
-                <h3 className="font-serif text-2xl mb-4 text-brown-dark border-b border-line pb-2">Delivered</h3>
+                <h3 className="font-serif text-2xl mb-4 text-blue-dark border-b border-line pb-2">Delivered</h3>
                 <div className="space-y-3">
                   {tableOrders.flatMap(order => order.items).filter(item => item.served).length === 0 ? (
                     <p className="text-ink/60 text-sm italic">No items delivered yet.</p>
@@ -322,7 +322,7 @@ export default function CustomerApp() {
                     tableOrders.flatMap(order => order.items).filter(item => item.served).map((item, idx) => (
                       <div key={idx} className="flex justify-between items-center bg-white/50 p-4 rounded-xl border border-line">
                         <div className="flex items-center gap-3 opacity-60">
-                          <span className="font-bold text-brown-dark">{item.quantity}x</span>
+                          <span className="font-bold text-blue-dark">{item.quantity}x</span>
                           <span className="font-medium text-ink line-through">{item.name}</span>
                         </div>
                         <span className="text-xs uppercase tracking-wider text-green-600 font-bold">Served</span>
@@ -347,12 +347,12 @@ export default function CustomerApp() {
                       ${item.price.toFixed(2)}
                     </span>
                     {cartItem ? (
-                      <div className="flex items-center gap-3 bg-paper border border-brown-dark rounded-full px-2 py-1">
-                        <button onClick={() => updateQuantity(item.id, -1)} className="p-1 text-brown-dark hover:bg-black/5 rounded-full">
+                      <div className="flex items-center gap-3 bg-paper border border-blue-dark rounded-full px-2 py-1">
+                        <button onClick={() => updateQuantity(item.id, -1)} className="p-1 text-blue-dark hover:bg-black/5 rounded-full">
                           <Minus className="w-3 h-3" />
                         </button>
                         <span className="font-bold text-sm w-4 text-center">{cartItem.quantity}</span>
-                        <button onClick={() => updateQuantity(item.id, 1)} className="p-1 text-brown-dark hover:bg-black/5 rounded-full">
+                        <button onClick={() => updateQuantity(item.id, 1)} className="p-1 text-blue-dark hover:bg-black/5 rounded-full">
                           <Plus className="w-3 h-3" />
                         </button>
                       </div>
@@ -366,7 +366,7 @@ export default function CustomerApp() {
                     ) : (
                       <button
                         onClick={() => addToCart(item)}
-                        className="bg-paper border border-brown-dark text-brown-dark px-4 py-1.5 rounded-full font-semibold text-xs cursor-pointer hover:bg-brown-dark hover:text-white transition-colors"
+                        className="bg-paper border border-blue-dark text-blue-dark px-4 py-1.5 rounded-full font-semibold text-xs cursor-pointer hover:bg-blue-dark hover:text-white transition-colors"
                       >
                         + Add
                       </button>
@@ -383,7 +383,7 @@ export default function CustomerApp() {
           <div className="fixed bottom-6 left-6 right-6 md:bottom-10 md:left-[calc(240px+2.5rem)] lg:left-[calc(240px+4rem)] md:right-10 lg:right-16 bg-ink text-white px-6 py-4 md:px-8 md:py-5 rounded-xl flex justify-between items-center shadow-[0_20px_40px_rgba(0,0,0,0.4)] z-30">
             <div className="flex items-center gap-4 md:gap-5">
               {cartCount > 0 && (
-                <div className="bg-brown-light w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0">
+                <div className="bg-blue-light w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0">
                   {cartCount}
                 </div>
               )}
@@ -411,7 +411,7 @@ export default function CustomerApp() {
               {cartCount > 0 && (
                 <button
                   onClick={() => setIsCartOpen(true)}
-                  className="bg-brown-light text-white px-4 py-2.5 md:px-6 md:py-3 rounded-md font-bold uppercase text-[10px] md:text-xs tracking-[1px] hover:bg-brown-dark transition-colors"
+                  className="bg-blue-light text-white px-4 py-2.5 md:px-6 md:py-3 rounded-md font-bold uppercase text-[10px] md:text-xs tracking-[1px] hover:bg-blue-dark transition-colors"
                 >
                   View Order
                 </button>
@@ -426,7 +426,7 @@ export default function CustomerApp() {
         <div className="fixed inset-0 bg-ink/80 z-50 flex flex-col justify-end md:justify-center md:items-center p-4">
           <div className="bg-paper w-full max-w-2xl mx-auto rounded-2xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
             <div className="p-6 border-b border-line flex justify-between items-center bg-white">
-              <h2 className="font-serif text-2xl italic text-brown-dark">Your Order</h2>
+              <h2 className="font-serif text-2xl italic text-blue-dark">Your Order</h2>
               <button onClick={() => setIsCartOpen(false)} className="text-ink opacity-60 hover:opacity-100 font-medium text-sm uppercase tracking-wider">
                 Close
               </button>
@@ -441,11 +441,11 @@ export default function CustomerApp() {
                       <p className="text-ink opacity-60 text-sm font-serif">${(item.price * item.quantity).toFixed(2)}</p>
                     </div>
                     <div className="flex items-center gap-3 bg-white border border-line rounded-full px-2 py-1">
-                      <button onClick={() => updateQuantity(item.id, -1)} className="p-1.5 text-brown-dark hover:bg-black/5 rounded-full">
+                      <button onClick={() => updateQuantity(item.id, -1)} className="p-1.5 text-blue-dark hover:bg-black/5 rounded-full">
                         <Minus className="w-3 h-3" />
                       </button>
                       <span className="font-bold w-6 text-center text-sm">{item.quantity}</span>
-                      <button onClick={() => updateQuantity(item.id, 1)} className="p-1.5 text-brown-dark hover:bg-black/5 rounded-full">
+                      <button onClick={() => updateQuantity(item.id, 1)} className="p-1.5 text-blue-dark hover:bg-black/5 rounded-full">
                         <Plus className="w-3 h-3" />
                       </button>
                     </div>
@@ -455,7 +455,7 @@ export default function CustomerApp() {
                     placeholder="Add note (e.g., No spice, extra sauce)"
                     value={item.notes}
                     onChange={(e) => updateNotes(item.id, e.target.value)}
-                    className="w-full text-sm bg-white border border-line rounded-lg px-4 py-3 focus:outline-none focus:border-brown-dark font-sans"
+                    className="w-full text-sm bg-white border border-line rounded-lg px-4 py-3 focus:outline-none focus:border-blue-dark font-sans"
                   />
                 </div>
               ))}
@@ -463,13 +463,13 @@ export default function CustomerApp() {
 
             <div className="p-6 border-t border-line bg-white">
               <div className="flex justify-between items-center mb-6">
-                <span className="text-[11px] uppercase tracking-[2px] font-bold text-brown-dark">Total</span>
+                <span className="text-[11px] uppercase tracking-[2px] font-bold text-blue-dark">Total</span>
                 <span className="font-serif text-2xl font-bold">${cartTotal.toFixed(2)}</span>
               </div>
               <button
                 onClick={placeOrder}
                 disabled={orderStatus === 'sending'}
-                className="w-full bg-brown-light hover:bg-brown-dark disabled:opacity-50 text-white font-bold py-4 rounded-md uppercase text-sm tracking-[1px] flex items-center justify-center gap-2 transition-colors"
+                className="w-full bg-blue-light hover:bg-blue-dark disabled:opacity-50 text-white font-bold py-4 rounded-md uppercase text-sm tracking-[1px] flex items-center justify-center gap-2 transition-colors"
               >
                 <Send className="w-4 h-4" />
                 {orderStatus === 'sending' ? 'Sending...' : 'Confirm Order'}

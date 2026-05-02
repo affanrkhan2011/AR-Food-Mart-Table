@@ -184,11 +184,11 @@ export default function StaffDashboard() {
       {/* Header */}
       <header className="bg-white border-b border-line px-6 py-4 flex justify-between items-center sticky top-0 z-20 shadow-sm">
         <div className="flex items-center gap-4">
-          <div className="text-2xl font-serif font-bold text-brown-dark tracking-tighter pr-4">
+          <div className="text-2xl font-serif font-bold text-blue-dark tracking-tighter pr-4">
             AR Food Mart
           </div>
           <div>
-            <h1 className="text-xl font-serif text-brown-dark font-medium border-l-2 border-line pl-4">Staff Dashboard</h1>
+            <h1 className="text-xl font-serif text-blue-dark font-medium border-l-2 border-line pl-4">Staff Dashboard</h1>
             <div className="flex items-center gap-2 mt-1 pl-4">
               <div className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
               <span className="text-sm text-ink/60">{isConnected ? 'Live' : 'Disconnected'}</span>
@@ -198,20 +198,20 @@ export default function StaffDashboard() {
         <div className="flex gap-4">
           <button 
             onClick={() => setActiveTab('orders')}
-            className={`px-4 py-2 rounded-lg font-bold transition-colors ${activeTab === 'orders' ? 'bg-brown-dark text-white' : 'bg-line/20 text-ink/70 hover:bg-line/40'}`}
+            className={`px-4 py-2 rounded-lg font-bold transition-colors ${activeTab === 'orders' ? 'bg-blue-dark text-white' : 'bg-line/20 text-ink/70 hover:bg-line/40'}`}
           >
             Orders & Bills
           </button>
           <button 
             onClick={() => setActiveTab('menu')}
-            className={`px-4 py-2 rounded-lg font-bold transition-colors ${activeTab === 'menu' ? 'bg-brown-dark text-white' : 'bg-line/20 text-ink/70 hover:bg-line/40'}`}
+            className={`px-4 py-2 rounded-lg font-bold transition-colors ${activeTab === 'menu' ? 'bg-blue-dark text-white' : 'bg-line/20 text-ink/70 hover:bg-line/40'}`}
           >
             Menu Manager
           </button>
         </div>
         <div className="flex gap-6 text-sm font-medium">
           <div className="flex flex-col items-center">
-            <span className="text-brown-light text-xl">{activeOrders.length}</span>
+            <span className="text-blue-light text-xl">{activeOrders.length}</span>
             <span className="text-ink/60">Active</span>
           </div>
           <div className="flex flex-col items-center">
@@ -242,12 +242,12 @@ export default function StaffDashboard() {
                   key={order.id} 
                   className={`rounded-xl border-2 overflow-hidden flex flex-col bg-white ${
                     order.status === 'NEW' 
-                      ? 'border-brown-light shadow-[0_0_15px_rgba(166,123,91,0.2)]' 
+                      ? 'border-blue-light shadow-[0_0_15px_rgba(91,133,166,0.2)]' 
                       : 'border-yellow-500/50'
                   }`}
                 >
                     <div className={`p-3 flex justify-between items-center border-b ${
-                      order.status === 'NEW' ? 'bg-brown-light/10 border-brown-light/20' : 'bg-yellow-500/10 border-yellow-500/20'
+                      order.status === 'NEW' ? 'bg-blue-light/10 border-blue-light/20' : 'bg-yellow-500/10 border-yellow-500/20'
                     }`}>
                       <div className="flex flex-col">
                          <div className="font-bold text-2xl text-ink leading-none">Table {order.table}</div>
@@ -257,7 +257,7 @@ export default function StaffDashboard() {
                          </div>
                       </div>
                       <div className="flex flex-col items-end">
-                        <div className="text-sm font-bold text-brown-dark bg-white px-2 py-0.5 rounded shadow-sm">{formatTime(order.timestamp)}</div>
+                        <div className="text-sm font-bold text-blue-dark bg-white px-2 py-0.5 rounded shadow-sm">{formatTime(order.timestamp)}</div>
                         <div className="text-[10px] text-ink/40 mt-1 uppercase">Received</div>
                       </div>
                     </div>
@@ -270,18 +270,18 @@ export default function StaffDashboard() {
                             <button 
                               onClick={() => updateItemServedStatus(order.id, item.orderItemId, !item.served)}
                               className={`mt-0.5 flex-shrink-0 w-5 h-5 rounded border flex items-center justify-center transition-colors ${
-                                item.served ? 'bg-green-500 border-green-500 text-white' : 'border-brown-light/50 text-transparent hover:border-brown-light'
+                                item.served ? 'bg-green-500 border-green-500 text-white' : 'border-blue-light/50 text-transparent hover:border-blue-light'
                               }`}
                             >
                               <CheckCircle className="w-3.5 h-3.5" />
                             </button>
                             <div className={`flex-1 ${item.served ? 'line-through text-ink/60' : ''}`}>
                               <div className="flex items-start gap-2">
-                                <span className="font-bold text-brown-light min-w-[1.5rem]">{item.quantity}x</span>
+                                <span className="font-bold text-blue-light min-w-[1.5rem]">{item.quantity}x</span>
                                 <span className="font-medium text-ink">{item.name}</span>
                               </div>
                               {item.notes && (
-                                <span className="text-sm text-brown-dark ml-8 bg-brown-light/10 px-2 py-1 rounded inline-block mt-1">
+                                <span className="text-sm text-blue-dark ml-8 bg-blue-light/10 px-2 py-1 rounded inline-block mt-1">
                                   Note: {item.notes}
                                 </span>
                               )}
@@ -372,12 +372,12 @@ export default function StaffDashboard() {
           </div>
         ) : (
           <div className="space-y-8 max-w-4xl mx-auto bg-white p-6 md:p-10 rounded-xl border border-line shadow-sm">
-            <h2 className="text-2xl font-serif text-brown-dark border-b border-line pb-4 font-medium">Menu Manager</h2>
+            <h2 className="text-2xl font-serif text-blue-dark border-b border-line pb-4 font-medium">Menu Manager</h2>
             <p className="text-sm text-ink/60 mb-6">Mark items as unavailable to prevent customers from adding them to their orders.</p>
             
             {MENU_CATEGORIES.map(category => (
               <div key={category} className="mb-8">
-                <h3 className="text-lg font-bold bg-brown-light/10 text-brown-dark px-4 py-2 rounded-t-md border-b border-brown-light/20">{category}</h3>
+                <h3 className="text-lg font-bold bg-blue-light/10 text-blue-dark px-4 py-2 rounded-t-md border-b border-blue-light/20">{category}</h3>
                 <div className="border border-line/50 border-t-0 rounded-b-md divide-y divide-line/30">
                   {MENU_ITEMS.filter(i => i.category === category).map(item => {
                     const isUnavailable = !!unavailableItems[item.id];
@@ -385,7 +385,7 @@ export default function StaffDashboard() {
                       <div key={item.id} className="flex justify-between items-center p-4 hover:bg-black/5 transition-colors">
                         <div>
                           <div className={`font-medium ${isUnavailable ? 'opacity-60 line-through' : 'text-ink'}`}>{item.name}</div>
-                          <div className="text-sm mt-1 font-serif text-brown-light">${item.price.toFixed(2)}</div>
+                          <div className="text-sm mt-1 font-serif text-blue-light">${item.price.toFixed(2)}</div>
                         </div>
                         <button
                           onClick={() => toggleItemAvailability(item.id, isUnavailable)}
