@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { MENU_CATEGORIES, MENU_ITEMS, MenuItem } from '../data/menu';
 import { ShoppingCart, Plus, Minus, Send, CreditCard, UtensilsCrossed } from 'lucide-react';
-import { db, handleFirestoreError, OperationType } from '../firebase';
-import { collection, addDoc, query, where, onSnapshot, doc } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
 
 type CartItem = MenuItem & { quantity: number; notes: string };
@@ -24,74 +22,47 @@ export default function CustomerApp() {
   const [billStatus, setBillStatus] = useState<'idle' | 'requesting' | 'requested'>('idle');
   const [unavailableItems, setUnavailableItems] = useState<Record<string, boolean>>({});
 
-  // Fetch unavailable menu items
+  // Fetch state via REST API
   useEffect(() => {
-    const path = 'menuState/availability';
-    const unsubscribe = onSnapshot(doc(db, 'menuState', 'availability'), (snapshot) => {
-      if (snapshot.exists()) {
-        setUnavailableItems(snapshot.data() as Record<string, boolean>);
-      } else {
-        setUnavailableItems({});
-      }
-    }, (error) => {
-      handleFirestoreError(error, OperationType.GET, path);
-    });
-    return () => unsubscribe();
-  }, []);
+    let intervalId: ReturnType<typeof setInterval>;
 
-  // Firestore listeners for real-time updates
-  useEffect(() => {
-    if (isTableConfirmed && tableNumber) {
-      const path = 'orders';
-      const q = query(
-        collection(db, path),
-        where('table', '==', tableNumber),
-        where('status', '!=', 'ARCHIVED')
-      );
+    const fetchData = async () => {
+      try {
+        const res = await fetch('/api/state');
+        if (!res.ok) return;
+        const data = await res.json();
+        
+        setUnavailableItems(data.unavailableItems || {});
+        
+        if (isTableConfirmed && tableNumber) {
+          const tOrders = (data.orders || []).filter((o: any) => o.table === tableNumber && o.status !== 'ARCHIVED');
+          setTableOrders(tOrders);
+          
+          if (tOrders.length > 0) {
+            setHasOrdered(true);
+          } else {
+            setHasOrdered(false);
+            if (activeCategory === 'My Orders') {
+              setActiveCategory(MENU_CATEGORIES[0]);
+            }
+          }
 
-      const unsubscribe = onSnapshot(q, (snapshot) => {
-        const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[];
-        setTableOrders(orders);
-        if (orders.length > 0) {
-          setHasOrdered(true);
-        } else {
-          setHasOrdered(false);
-          if (activeCategory === 'My Orders') {
-            setActiveCategory(MENU_CATEGORIES[0]);
+          const pendingRequests = (data.billRequests || []).filter((b: any) => b.table === tableNumber && b.status === 'PENDING');
+          if (pendingRequests.length > 0) {
+            setBillStatus('requested');
+          } else {
+            setBillStatus('idle');
           }
         }
-      }, (error) => {
-        handleFirestoreError(error, OperationType.GET, path);
-      });
+      } catch (error) {
+        console.error('Error fetching state', error);
+      }
+    };
 
-      return () => unsubscribe();
-    }
-  }, [isTableConfirmed, tableNumber]);
-
-  useEffect(() => {
-    if (isTableConfirmed && tableNumber) {
-      const path = 'billRequests';
-      const q = query(
-        collection(db, path),
-        where('table', '==', tableNumber),
-        where('status', '==', 'PENDING')
-      );
-
-      const unsubscribe = onSnapshot(q, (snapshot) => {
-        const requests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[];
-        // If there's a pending request, set status to requested
-        if (requests.length > 0) {
-          setBillStatus('requested');
-        } else {
-          setBillStatus('idle');
-        }
-      }, (error) => {
-        handleFirestoreError(error, OperationType.GET, path);
-      });
-
-      return () => unsubscribe();
-    }
-  }, [isTableConfirmed, tableNumber]);
+    fetchData();
+    intervalId = setInterval(fetchData, 3000);
+    return () => clearInterval(intervalId);
+  }, [isTableConfirmed, tableNumber, activeCategory]);
 
   const handleTableSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -136,7 +107,6 @@ export default function CustomerApp() {
   const placeOrder = async () => {
     if (cart.length === 0) return;
     setOrderStatus('sending');
-    const path = 'orders';
     
     try {
       const itemsWithStatus = cart.map((item: any) => ({
@@ -145,13 +115,18 @@ export default function CustomerApp() {
         served: false
       }));
 
-      await addDoc(collection(db, path), {
-        table: tableNumber,
-        items: itemsWithStatus,
-        subtotal: cartTotal,
-        status: 'NEW',
-        timestamp: new Date().toISOString(),
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          table: tableNumber,
+          items: itemsWithStatus,
+          subtotal: cartTotal,
+          status: 'NEW',
+        })
       });
+
+      if (!res.ok) throw new Error('Failed to place order');
       
       setOrderStatus('sent');
       setCart([]);
@@ -160,28 +135,32 @@ export default function CustomerApp() {
       setTimeout(() => setOrderStatus('idle'), 3000);
     } catch (error) {
       setOrderStatus('idle');
-      handleFirestoreError(error, OperationType.WRITE, path);
+      console.error(error);
     }
   };
 
   const requestBill = async () => {
     if (tableOrders.length === 0) return;
     setBillStatus('requesting');
-    const path = 'billRequests';
     
     try {
-      await addDoc(collection(db, path), {
-        table: tableNumber,
-        orders: tableOrders,
-        total: tableTotal,
-        status: 'PENDING',
-        timestamp: new Date().toISOString(),
+      const res = await fetch('/api/billRequests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          table: tableNumber,
+          orders: tableOrders,
+          total: tableTotal,
+          status: 'PENDING',
+        })
       });
+
+      if (!res.ok) throw new Error('Failed to request bill');
       
       setBillStatus('requested');
     } catch (error) {
       setBillStatus('idle');
-      handleFirestoreError(error, OperationType.WRITE, path);
+      console.error(error);
     }
   };
 

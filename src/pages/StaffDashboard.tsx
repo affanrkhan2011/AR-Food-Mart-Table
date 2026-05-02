@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Clock, CheckCircle, Eye, BellRing, Receipt, Trash2 } from 'lucide-react';
-import { db, handleFirestoreError, OperationType } from '../firebase';
-import { collection, query, onSnapshot, doc, updateDoc, setDoc, orderBy } from 'firebase/firestore';
 import { MENU_CATEGORIES, MENU_ITEMS } from '../data/menu';
 
 type OrderItem = {
@@ -17,7 +15,7 @@ type Order = {
   table: string;
   items: OrderItem[];
   subtotal: number;
-  status: 'NEW' | 'SEEN' | 'DONE';
+  status: 'NEW' | 'SEEN' | 'DONE' | 'ARCHIVED';
   timestamp: string;
 };
 
@@ -50,69 +48,59 @@ export default function StaffDashboard() {
   }, [confirmingOrderId, confirmingBillId]);
 
   useEffect(() => {
-    // Setup Firestore listeners
-    const ordersPath = 'orders';
-    const ordersQuery = query(collection(db, ordersPath), orderBy('timestamp', 'desc'));
-    const unsubscribeOrders = onSnapshot(ordersQuery, (snapshot) => {
-      const ordersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Order[];
-      setOrders(ordersData);
-      setIsConnected(true);
-    }, (error) => {
-      handleFirestoreError(error, OperationType.GET, ordersPath);
-      setIsConnected(false);
-    });
+    let intervalId: ReturnType<typeof setInterval>;
 
-    const billsPath = 'billRequests';
-    const billsQuery = query(collection(db, billsPath), orderBy('timestamp', 'desc'));
-    const unsubscribeBills = onSnapshot(billsQuery, (snapshot) => {
-      const billsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as BillRequest[];
-      setBillRequests(billsData);
-    }, (error) => {
-      handleFirestoreError(error, OperationType.GET, billsPath);
-    });
-
-    const menuPath = 'menuState/availability';
-    const unsubscribeMenu = onSnapshot(doc(db, 'menuState', 'availability'), (snapshot) => {
-      if (snapshot.exists()) {
-        setUnavailableItems(snapshot.data() as Record<string, boolean>);
-      } else {
-        setUnavailableItems({});
+    const fetchData = async () => {
+      try {
+        const res = await fetch('/api/state');
+        if (!res.ok) return;
+        const data = await res.json();
+        
+        const sortedOrders = (data.orders || []).sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        const sortedBills = (data.billRequests || []).sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        
+        setOrders(sortedOrders);
+        setBillRequests(sortedBills);
+        setUnavailableItems(data.unavailableItems || {});
+        setIsConnected(true);
+      } catch (error) {
+        console.error('Error fetching state:', error);
+        setIsConnected(false);
       }
-    }, (error) => handleFirestoreError(error, OperationType.GET, menuPath));
-
-    return () => {
-      unsubscribeOrders();
-      unsubscribeBills();
-      unsubscribeMenu();
     };
+
+    fetchData();
+    intervalId = setInterval(fetchData, 3000);
+
+    return () => clearInterval(intervalId);
   }, []);
 
   const toggleItemAvailability = async (itemId: string, currentlyUnavailable: boolean) => {
-    const path = `menuState/availability`;
     try {
-      const menuRef = doc(db, 'menuState', 'availability');
-      await setDoc(menuRef, {
-        [itemId]: !currentlyUnavailable
-      }, { merge: true });
+      await fetch('/api/menuState', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [itemId]: !currentlyUnavailable })
+      });
     } catch (error) {
-      handleFirestoreError(error, OperationType.WRITE, path);
+      console.error('Failed to update availability', error);
     }
   };
 
   const updateOrderStatus = async (id: string, status: 'SEEN' | 'DONE') => {
-    const path = `orders/${id}`;
     try {
-      const orderRef = doc(db, 'orders', id);
-      await updateDoc(orderRef, { status });
+      await fetch(`/api/orders/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
     } catch (error) {
-      handleFirestoreError(error, OperationType.WRITE, path);
+      console.error('Failed to update order status', error);
     }
   };
 
   const updateItemServedStatus = async (orderId: string, itemId: string, served: boolean) => {
-    const path = `orders/${orderId}`;
     try {
-      const orderRef = doc(db, 'orders', orderId);
       const order = orders.find(o => o.id === orderId);
       if (!order) return;
 
@@ -129,46 +117,52 @@ export default function StaffDashboard() {
         newStatus = 'SEEN';
       }
 
-      await updateDoc(orderRef, { 
-        items: updatedItems,
-        status: newStatus
+      await fetch(`/api/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          items: updatedItems,
+          status: newStatus
+        })
       });
     } catch (error) {
-      handleFirestoreError(error, OperationType.WRITE, path);
+      console.error('Failed to update item served status', error);
     }
   };
 
   const updateBillStatus = async (id: string, table: string) => {
-    const billPath = `billRequests/${id}`;
     try {
       // 1. Mark the bill request as COMPLETED
-      const billRef = doc(db, 'billRequests', id);
-      await updateDoc(billRef, { status: 'COMPLETED' });
+      await fetch(`/api/billRequests/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'COMPLETED' })
+      });
 
       // 2. Find all non-archived orders for this table and mark them as ARCHIVED
       // We do this so the table resets for the next customer
       const tableOrders = orders.filter(o => o.table === table && o.status !== 'ARCHIVED');
       for (const order of tableOrders) {
-        const orderPath = `orders/${order.id}`;
-        try {
-          const orderRef = doc(db, 'orders', order.id);
-          await updateDoc(orderRef, { status: 'ARCHIVED' });
-        } catch (error) {
-          handleFirestoreError(error, OperationType.WRITE, orderPath);
-        }
+        await fetch(`/api/orders/${order.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'ARCHIVED' })
+        });
       }
     } catch (error) {
-      handleFirestoreError(error, OperationType.WRITE, billPath);
+      console.error('Failed to update bill status', error);
     }
   };
 
   const archiveOrder = async (orderId: string) => {
-    const path = `orders/${orderId}`;
     try {
-      const orderRef = doc(db, 'orders', orderId);
-      await updateDoc(orderRef, { status: 'ARCHIVED' });
+      await fetch(`/api/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'ARCHIVED' })
+      });
     } catch (error) {
-      handleFirestoreError(error, OperationType.WRITE, path);
+      console.error('Failed to archive order', error);
     }
   };
 
